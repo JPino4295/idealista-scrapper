@@ -143,8 +143,33 @@ async function getNewApartments(apartments) {
     return newApartments;
 }
 
+function checkVariables() {
+    if (!process.env.BASE_URL){
+        throw new Error('A base url must exist in the environment variables');
+    }
+
+    if (!process.env.SEARCH_URL){
+        throw new Error('A search url must exist in the environment variables');
+    }
+
+    if (!process.env.TELEGRAM_TOKEN){
+        throw new Error('A telegram token must exist in the environment variables');
+    }
+
+    if (!process.env.TELEGRAM_GROUP_ID){
+        throw new Error('A telegram group id must exist in the environment variables');
+    }
+
+    if (!process.env.DB_URL){
+        throw new Error('A db url must exist in the environment variables');
+    }
+}
+
 (async () => {
     try {
+        checkVariables();
+
+
         const data = await getHtml({
             src: `${BASE_URL + SEARCH_URL}`,
             options: globalOptions
