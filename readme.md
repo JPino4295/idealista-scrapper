@@ -1,4 +1,6 @@
-Environment Variables
+# Environment Variables
+
+
  Variable           | Mandatory | Description                                                     
 :--------------------:|:-----------:|:-----------------------------------------------------------------:
  BASE_URL           | YES       | The base url to search. Right now only accepts Idealista        
