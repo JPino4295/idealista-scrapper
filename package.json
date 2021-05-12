@@ -1,0 +1,21 @@
+{
+  "name": "idealistascrapper",
+  "version": "0.0.1",
+  "description": "Scrapper for a certain url from idealista",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@bitbucket.org-personal_user:Jpino4295/idealistascrapper.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "cheerio": "^1.0.0-rc.9",
+    "dotenv": "^9.0.2",
+    "node-telegram-bot-api": "^0.53.0"
+  }
+}
