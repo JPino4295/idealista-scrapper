@@ -136,8 +136,6 @@ async function getNewApartments(apartments) {
                 }, {
                     prize: apartment.prize
                 });
-
-                console.log(`updated ${JSON.stringify(updated)}`);
                 newApartments.push(apartment);
             }
         }
@@ -158,11 +156,14 @@ async function getNewApartments(apartments) {
             const tBot =  new TelegramBot(process.env.TELEGRAM_TOKEN);
             console.log(`Sending message...`);
             tBot.sendMessage(process.env.TELEGRAM_GROUP_ID, message);
+        } else {
+            console.log(`No new apartmens found...`);
         }
 
+        console.log(`Closing connection. 30 seconds left`);
         setTimeout(() => {
             mongoose.disconnect();
-        }, 1 * 60 * 1000);
+        }, 30 * 60 * 1000);
         
     } catch (e) {
         console.error(`APPLICATION ERROR: ${e.toString()}`);
