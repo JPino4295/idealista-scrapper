@@ -1,6 +1,6 @@
 Environment Variables
  Variable           | Mandatory | Description                                                     
---------------------|-----------|-----------------------------------------------------------------
+:--------------------:|:-----------:|:-----------------------------------------------------------------:
  BASE_URL           | YES       | The base url to search. Right now only accepts Idealista        
  SEARCH_URL         | YES       | The search url to search. Right now only accepts from Idealista 
  USER_AGENT         | NO        | Desired User-Agent.                                             
