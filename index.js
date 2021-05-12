@@ -1,9 +1,12 @@
 'use strict';
 
+const Apartment = require('./models/Apartment');
+
 require('dotenv').config()
 
 const axios = require('axios'),
     cheerio = require('cheerio'),
+    mongoose = require('mongoose'),
     TelegramBot = require('node-telegram-bot-api'),
     SEARCH_URL = process.env.SEARCH_URL,
     BASE_URL = process.env.BASE_URL,
@@ -104,10 +107,42 @@ function processApartment(apartmentHtml) {
 function generateMessage(apartments) {
     let message = '';
     apartments.forEach((apartment) => {
-        message += `${apartment.title} (${apartment.zone}) - ${apartment.size} m² (${apartment.prize}) -> ${apartment.url}\n\n\n`;
+        message += `${apartment.title} (${apartment.zone}) - ${apartment.size} m² (${apartment.prize}) -> ${apartment.url}${apartment.updated ? ' (Actualizado)' : ''}\n\n\n`;
     })
 
     return message;
+}
+
+async function getNewApartments(apartments) {
+    console.log(`process.env.DB_URL ${JSON.stringify(process.env.DB_URL)}`);
+    mongoose.connect(process.env.DB_URL, {useNewUrlParser: true, useUnifiedTopology: true});
+    let newApartments = []
+    for (let apartment of apartments) {
+        const apartmentModel = Apartment;
+        const apartmentDb = await apartmentModel.findOne({
+            title: apartment.title,
+            size: apartment.size,
+            rooms: apartment.rooms
+        });
+
+        if (!apartmentDb) {
+            await apartmentModel.create(apartment);
+            newApartments.push(apartment);
+        } else {
+            if (apartmentDb.prize !== apartment.prize) {
+                apartment.updated = true;
+                const updated = await apartmentModel.updateOne({
+                    _id: apartmentDb._id
+                }, {
+                    prize: apartment.prize
+                });
+
+                console.log(`updated ${JSON.stringify(updated)}`);
+                newApartments.push(apartment);
+            }
+        }
+    }
+    return newApartments;
 }
 
 (async () => {
@@ -117,11 +152,18 @@ function generateMessage(apartments) {
             options: globalOptions
         });
         const apartments = await processHtml(data);
-        const message = generateMessage(apartments);
-        const tBot =  new TelegramBot(process.env.TELEGRAM_TOKEN);
-        
+        const newApartments = await getNewApartments(apartments);
+        if (newApartments.length > 0) {
+            const message = generateMessage(newApartments);
+            const tBot =  new TelegramBot(process.env.TELEGRAM_TOKEN);
+            console.log(`Sending message...`);
+            tBot.sendMessage(process.env.TELEGRAM_GROUP_ID, message);
+        }
 
-        tBot.sendMessage(process.env.TELEGRAM_GROUP_ID, message);
+        setTimeout(() => {
+            mongoose.disconnect();
+        }, 1 * 60 * 1000);
+        
     } catch (e) {
         console.error(`APPLICATION ERROR: ${e.toString()}`);
         process.exit(1);

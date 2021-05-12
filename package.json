@@ -16,6 +16,7 @@
     "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.9",
     "dotenv": "^9.0.2",
+    "mongoose": "^5.12.8",
     "node-telegram-bot-api": "^0.53.0"
   }
 }

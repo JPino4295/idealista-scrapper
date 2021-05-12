@@ -6,3 +6,6 @@ Environment Variables
 | USER_AGENT         | NO        | Desired User-Agent.                                             |
 | TELEGRAM_TOKEN     | YES       | Token of the telegram bot                                       |
 | TELEGRAM_GROUP_ID  | YES       | Id from the group where the bot will be sending messages        |
+| DB_URL             | YES       | MongoDb url                                                     |
+
+MONGODB 4.4.6
