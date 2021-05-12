@@ -11,4 +11,6 @@
  DB_URL             | YES       | MongoDb url                                                     
 
 MongoDB: Version used 4.4.6
+
+
 To iniciate the process, just use node index.js
