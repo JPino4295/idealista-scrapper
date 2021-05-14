@@ -30,11 +30,11 @@ async function getHtml({src, options}) {
     return data;
 }
 
-async function processHtml(html) {
+async function processHtml({html, apartments}) {
     const $ = cheerio.load(html);
     
     const dataCards = $('.item.item-multimedia-container');
-    const apartments = [];
+    const apartmentsResponse = apartments || [];
 
     for (let data of dataCards) {
         const html = $(data).html();
@@ -47,10 +47,19 @@ async function processHtml(html) {
         const apartmentData = processApartment(apartmentHtml);
         apartmentData.url = BASE_URL + url.replace('/', '');
         
-        apartments.push(apartmentData);
+        apartmentsResponse.push(apartmentData);
     }
 
-    return apartments;
+    if ($('.pagination').length > 0 && $('.pagination .icon-arrow-right-after').length > 0) {
+        const url = $('.pagination .icon-arrow-right-after').attr('href'),
+            nextPage = await axios.get(BASE_URL + url.replace('/', ''), globalOptions),
+            nextHtml = nextPage.data;
+        return await processHtml({html: nextHtml, apartments: apartmentsResponse})
+    } else {
+        return Promise.resolve(apartments);
+    }
+
+    
 }
 
 function processApartment(apartmentHtml) {
@@ -113,9 +122,28 @@ function generateMessage(apartments) {
     return message;
 }
 
+function startConnection() {
+    if (!process.env.TESTING) {
+        console.log(`process.env.DB_URL ${JSON.stringify(process.env.DB_URL)}`);
+        mongoose.connect(process.env.DB_URL, {useNewUrlParser: true, useUnifiedTopology: true});
+    }
+}
+
+function closeConnection() {
+    if (!process.env.TESTING) {
+        console.log(`Closing connection. 30 seconds left`);
+        setTimeout(() => {
+            mongoose.disconnect();
+        }, 30 * 60 * 1000);
+    }
+}
+
 async function getNewApartments(apartments) {
-    console.log(`process.env.DB_URL ${JSON.stringify(process.env.DB_URL)}`);
-    mongoose.connect(process.env.DB_URL, {useNewUrlParser: true, useUnifiedTopology: true});
+    if (process.env.TESTING) {
+        return apartments;
+    }
+
+    startConnection();
     let newApartments = []
     for (let apartment of apartments) {
         const apartmentModel = Apartment;
@@ -169,29 +197,31 @@ function checkVariables() {
     try {
         checkVariables();
 
-
         const data = await getHtml({
             src: `${BASE_URL + SEARCH_URL}`,
             options: globalOptions
         });
-        const apartments = await processHtml(data);
+        const apartments = await processHtml({html: data});
         const newApartments = await getNewApartments(apartments);
-        if (newApartments.length > 0) {
-            const message = generateMessage(newApartments);
-            const tBot =  new TelegramBot(process.env.TELEGRAM_TOKEN);
-            console.log(`Sending message...`);
-            tBot.sendMessage(process.env.TELEGRAM_GROUP_ID, message);
+
+        if (process.env.TESTING) {
+            console.log(`Found ${newApartments.length} apartments`);
         } else {
-            console.log(`No new apartmens found...`);
+            if (newApartments.length > 0) {
+                const message = generateMessage(newApartments);
+                const tBot =  new TelegramBot(process.env.TELEGRAM_TOKEN);
+                console.log(`Sending message...`);
+                tBot.sendMessage(process.env.TELEGRAM_GROUP_ID, message);
+            } else {
+                console.log(`No new apartmens found...`);
+            }    
         }
 
-        console.log(`Closing connection. 30 seconds left`);
-        setTimeout(() => {
-            mongoose.disconnect();
-        }, 30 * 60 * 1000);
+        closeConnection();
         
     } catch (e) {
         console.error(`APPLICATION ERROR: ${e.toString()}`);
+        console.error(e);
         process.exit(1);
     }
     
