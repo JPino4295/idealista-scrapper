@@ -65,7 +65,7 @@ function processApartment(apartmentHtml) {
     let apartment = {};
 
     apartment.title = $('.main-info__title-main').text();
-    apartment.prize = $('.info-data-price').text();
+    apartment.price = $('.info-data-price').text();
     apartment.zone = $('.main-info__title-minor').text();
 
     $('#details .details-property .details-property-feature-one .details-property_features > ul > li').each(function() {
@@ -113,7 +113,7 @@ function processApartment(apartmentHtml) {
 function generateMessage(apartments) {
     let message = '';
     apartments.forEach((apartment) => {
-        message += `${apartment.title} (${apartment.zone}) - ${apartment.size} m² (${apartment.prize}) -> ${apartment.url}${apartment.updated ? ' (Actualizado)' : ''}\n\n\n`;
+        message += `${apartment.title} (${apartment.zone}) - ${apartment.size} m² (${apartment.price}) -> ${apartment.url}${apartment.updated ? ' (Actualizado)' : ''}\n\n\n`;
     })
 
     return message;
@@ -151,19 +151,20 @@ async function getNewApartments(apartments) {
         const apartmentDb = await apartmentModel.findOne({
             title: apartment.title,
             size: apartment.size,
-            rooms: apartment.rooms
+            rooms: apartment.rooms,
+            url: apartment.url
         });
 
         if (!apartmentDb) {
             await apartmentModel.create(apartment);
             newApartments.push(apartment);
         } else {
-            if (apartmentDb.prize !== apartment.prize) {
+            if (apartmentDb.price !== apartment.price) {
                 apartment.updated = true;
                 const updated = await apartmentModel.updateOne({
                     _id: apartmentDb._id
                 }, {
-                    prize: apartment.prize
+                    price: apartment.price
                 });
                 newApartments.push(apartment);
             }
