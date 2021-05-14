@@ -133,9 +133,9 @@ function closeConnection() {
             mongoose.disconnect();
             console.log('Disconnected, exiting');
             process.exit(0);
-        }, 30 * 60 * 1000);
+        }, 30 * 1000);
     } else {
-        process.exit(0)
+        process.exit(0);
     }
 }
 
