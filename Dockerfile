@@ -1,7 +1,4 @@
-FROM node:14.16.1-buster-slim
-
-# Install dependencies
-RUN apt-get update
+FROM node:14.16.1-alpine3.13
 
 WORKDIR /app
 
