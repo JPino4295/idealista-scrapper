@@ -1,0 +1,19 @@
+version: "3"
+    
+services:
+  db:
+    image: mongo:4.4.6
+    ports:
+      - "27017:27017"
+    
+  app:
+    depends_on:
+      - db
+    image: ideal_scrap:1
+    environment:
+      BASE_URL: https://www.idealista.com/
+      SEARCH_URL: areas/venta-viviendas/con-precio-hasta_200000,metros-cuadrados-mas-de_100,pisos,de-tres-dormitorios,de-cuatro-cinco-habitaciones-o-mas,un-bano,dos-banos,tres-banos-o-mas,ascensor,ultimas-plantas,plantas-intermedias,obra-nueva,buen-estado/?shape=%28%28_nnuF%7C%7EjU%7B%5EwIpGmTfJz%40bEvBlJrHhBqw%40%7BTz%40uAu%5B%60LiUvMbHlBpUvEzDf%40bcAwEtHwOfF%29%29
+      USER_AGENT: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0
+      TELEGRAM_TOKEN: 1846029731:AAEAsAJG9CzMQX1l2dinSr3r-6JlCzfAU_s
+      TELEGRAM_GROUP_ID: -471882787
+      DB_URL: mongodb://db:27017/idealista

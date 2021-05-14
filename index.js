@@ -32,7 +32,6 @@ async function getHtml({src, options}) {
 
 async function processHtml({html, apartments}) {
     const $ = cheerio.load(html);
-    
     const dataCards = $('.item.item-multimedia-container');
     const apartmentsResponse = apartments || [];
 
@@ -55,11 +54,9 @@ async function processHtml({html, apartments}) {
             nextPage = await axios.get(BASE_URL + url.replace('/', ''), globalOptions),
             nextHtml = nextPage.data;
         return await processHtml({html: nextHtml, apartments: apartmentsResponse})
-    } else {
-        return Promise.resolve(apartments);
     }
-
     
+    return apartmentsResponse;
 }
 
 function processApartment(apartmentHtml) {
@@ -134,7 +131,11 @@ function closeConnection() {
         console.log(`Closing connection. 30 seconds left`);
         setTimeout(() => {
             mongoose.disconnect();
+            console.log('Disconnected, exiting');
+            process.exit(0);
         }, 30 * 60 * 1000);
+    } else {
+        process.exit(0)
     }
 }
 
@@ -191,6 +192,11 @@ function checkVariables() {
     if (!process.env.DB_URL){
         throw new Error('A db url must exist in the environment variables');
     }
+
+    if (Boolean(process.env.TESTING)) {
+        console.log(`process.env.TESTING ${JSON.stringify(process.env.TESTING)}`);
+        console.log('TESTING MODE');
+    }
 }
 
 (async () => {
@@ -211,14 +217,14 @@ function checkVariables() {
                 const message = generateMessage(newApartments);
                 const tBot =  new TelegramBot(process.env.TELEGRAM_TOKEN);
                 console.log(`Sending message...`);
-                tBot.sendMessage(process.env.TELEGRAM_GROUP_ID, message);
+                const messageResponse = await tBot.sendMessage(process.env.TELEGRAM_GROUP_ID, message);
+                console.log(`messageResponse ${JSON.stringify(messageResponse)}`);
             } else {
                 console.log(`No new apartmens found...`);
             }    
         }
 
         closeConnection();
-        
     } catch (e) {
         console.error(`APPLICATION ERROR: ${e.toString()}`);
         console.error(e);
