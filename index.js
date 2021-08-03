@@ -2,7 +2,7 @@
 
 const Apartment = require('./models/Apartment');
 
-require('dotenv').config()
+require('dotenv').config({ path: `${__dirname}/.env` })
 
 const axios = require('axios'),
     cheerio = require('cheerio'),
